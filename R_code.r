@@ -1,110 +1,276 @@
-                           #### loading the DMP 300 dataset VITO paltform in one step
+## Multiple Time Series Analysis of Dry Matter Productivity in Indian Western Gaths region
+## Periods are always Jan 10th for every years of the data set (indian dry season)
+########## Multiple Time Series Analysis on DMP, FAPAR, NDVI V2 1Km spatial scale from VITO catalogues 1999-2020 of the WG region
+
+library(ncdf4)
+library(raster)
+library(RStoolbox)
+library(rgdal)
+library(gdalUtils)
+library(ggplot2)
+library(rasterVis)
+library(GGally)
+
+# library(scico)
+
+# DMP
+setwd("D:/uppangala/cop_dmp_1km/")                   # if I want to use the dataset at 1km spatial resolution # 22years time resolution
+
+rlist <- list.files (pattern ="DMP")
+rlist                                                # 22 years
+import <- lapply(rlist,raster)
+dmp.multi <- stack(import) 
+
+ext <- c(75.25, 75.55, 12.15, 12.45)                 # South-Center Western Gaths Region
+dmp.wg <- crop(dmp.multi,ext)
+
+names(dmp.wg) <- c("Jan 99"," Jan 00"," Jan 01"," Jan 02"," Jan 03","Jan 04","Jan 05","Jan 06","Jan 07","Jan 08","Jan 09","Jan 10","Jan 11","Jan 12","Jan 13","Jan 14","Jan 15","Jan 16","Jan 17","Jan 18","Jan 19","Jan 20")
+ggpairs(dmp.wg)
+
+levelplot(dmp.wg, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"))
+boxplot(dmp.wg, outline=F, horizontal=F, axes=T, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"), col="gold")
+
+#names(dmp.wg) <- c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020")
+#ggpairs(dmp.wg, names= c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"))
+
+# FAPAR
+setwd("D:/uppangala/cop_fapar_1km/")                   # if I want to use the dataset at 1km spatial resolution # 22years time resolution
+
+rlist2 <- list.files (pattern ="FAPAR")
+rlist2                                                 # 22 years
+import2 <- lapply(rlist2,raster)
+fapar.multi <- stack(import2)
+
+# ext <- c(75.25, 75.55, 12.15, 12.45)                 # South-Central Western Gaths Region
+fapar.wg <- crop(fapar.multi,ext)
+
+names(fapar.wg) <- c("Jan 99"," Jan 00"," Jan 01"," Jan 02"," Jan 03","Jan 04","Jan 05","Jan 06","Jan 07","Jan 08","Jan 09","Jan 10","Jan 11","Jan 12","Jan 13","Jan 14","Jan 15","Jan 16","Jan 17","Jan 18","Jan 19","Jan 20")
+ggpairs(fapar.wg)
+
+levelplot(fapar.wg, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"))
+boxplot(fapar.wg, outline=F, horizontal=F, axes=T, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"), col="gold")
+
+
+# NDVI
+setwd("D:/uppangala/cop_ndvi_1km/")                   # if I want to use the dataset at 1km spatial resolution # 22years time resolution
+
+rlist3 <- list.files (pattern ="NDVI")
+rlist3                                                 # 22 years
+import3 <- lapply(rlist3,raster)
+ndvi.multi <- stack(import3)
+
+# ext <- c(75.25, 75.55, 12.15, 12.45)                 # South-Center Western Gaths Region
+ndvi.wg <- crop(ndvi.multi,ext)
+
+names(ndvi.wg) <- c("Jan 99"," Jan 00"," Jan 01"," Jan 02"," Jan 03","Jan 04","Jan 05","Jan 06","Jan 07","Jan 08","Jan 09","Jan 10","Jan 11","Jan 12","Jan 13","Jan 14","Jan 15","Jan 16","Jan 17","Jan 18","Jan 19","Jan 20")
+ggpairs(ndvi.wg)
+
+levelplot(ndvi.wg, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"))
+boxplot(ndvi.wg, outline=F, horizontal=F, axes=T, names=c("1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"), col="gold")
+
+
+## costruisco i 3 DF
+
+library(tidyverse)
+library(raster)
+library(RStoolbox)
+
+
+# DF dry matter productivity SW ghats 
+
+fn <- system.file("external/test.grd", package="raster")
+
+stc <- stack(
+  fn,
+  fn
+)
+
+stc_df <- fortify(dmp.wg, maxpixels = 5689958400) %>% 
+  pivot_longer(
+    .,
+    cols = -(1:2),
+    names_to = "layer",
+  )
+
+stc_df$value
+
+str(stc_df)
+
+# DF fapar sw ghats
+
+fn <- system.file("external/test.grd", package="raster")
+
+stc <- stack(
+  fn,
+  fn
+)
+
+stc_df2 <- fortify(fapar.wg, maxpixels = 5689958400) %>% 
+  pivot_longer(
+    .,
+    cols = -(1:2),
+    names_to = "layer",
+  )
+
+stc_df2
+
+str(stc_df2)
+
+stc_df$value
+
+# DF ndvi sw ghats
+
+fn <- system.file("external/test.grd", package="raster")
+
+stc <- stack(
+  fn,
+  fn
+)
+
+stc_df3 <- fortify(ndvi.wg, maxpixels = 5689958400) %>% 
+  pivot_longer(
+    .,
+    cols = -(1:2),
+    names_to = "layer",
+  )
+
+stc_df3$value
+
+str(stc_df3)
+
+plot(stc_df3)
+
+## Linear regression models
+
+#______________________DMP_________________________
+plot(stc_df)
+mod1 <- lm(stc_df)
+mod1
+summary(mod1)
+plot(mod1)
+#abline(a = mod1$coefficients[1], b = mod1$coefficients[2], col = "red", lwd = 3)
+
+#______________________FAPAR__________________________
+
+plot(stc_df2)
+mod2 <- lm(stc_df2)
+mod2
+summary(mod2)
+plot(mod2)
+#abline(a = mod1$coefficients[1], b = mod1$coefficients[2], col = "red", lwd = 3)
+
+#________________________NDVI__________________________
+plot(stc_df3)
+mod3 <- lm(stc_df3)
+mod3
+summary(mod3)
+plot(mod3)
+#abline(a = mod1$coefficients[1], b = mod1$coefficients[2], col = "red", lwd = 3)
+
+### to see the medians
+
+summary(dmp.wg)
+
+summary(fapar.wg)
+
+summary(ndvi.wg)
+
+# trying the principal component analysis
+dmp_pca <- rasterPCA(dmp.wg)
+plot(dmp_pca$map) 
+summary(dmp_pca$model)
+
+# Create a matrix for the dmp median and for the time
+summary(dmp.wg)
+DMP_Medians <- c(93.19,79.89,79.18,81.87,77.41,79.43,83.84,83.86,94.74,88.61,92.42,94.85,81.11,87.39,75.16,80.39,100.36,88.80,96.69,84.68,109.67,85.39)
+
+summary(fapar.wg)
+FAPAR_Medians <- c(0.736, 0.708, 0.68, 0.724, 0.692, 0.68, 0.728, 0.728, 0.728, 0.74, 0.756, 0.784, 0.74, 0.752, 0.736, 0.692, 0.804, 0.788, 0.736, 0.76, 0.82, 0.83)
+
+summary(ndvi.wg)
+NDVI_Medians <- c(0.752, 0.788, 0.76, 0.772, 0.704, 0.736, 0.752, 0.776, 0.74, 0.78, 0.776, 0.82, 0.756, 0.776, 0.788, 0.756, 0.816, 0.808, 0.74, 0.728, 0.816, 0.836)
+
+Time <- c(1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020)
+
+plot(time, DMP_Medians)
+
+plot(time, DMP_Medians, type = "b", pch = 19, 
+     col = "red", xlab = "x", ylab = "y")
+plot(time,DMP_Medians, type="l", col="green", lwd=5, xlab="time", ylab="Kg / ha / day", main="January Western Ghats Dry Matter Productivity")
+
+### line fitting the DMP_Median values
+> line(DMP_Medians)
+
+Call:
+  line(DMP_Medians)
+
+Coefficients:
+  [1]  80.5205   0.4439
+
+## Linear model time-dry matter productivity medians
+m <- lm(time ~ DMP_Medians)
+m
+plot(time, DMP_Medians)
+
+############ trying to make a line fitting the points in the grapht
+
+#abline(a = m$coefficients[1], b = m$coefficients[2], col = "red", lwd = 3)
+abline(80.5205, 0.4439)
+abline(lm(time1 ~ DMP_Medians))
+
+#### QQplot
+
+qqnorm(DMP_Medians, pch = 1, frame = FALSE)
 
 
 
-rlistdmp300 <- list.files(pattern="DMP") 
-rlistdmp300
-import <- lapply(rlistdmp300, raster)
-dmp300.multitemp <- stack(import)
+## Create a DF and use ggplot visualization
 
-# to crop images on my AOI (UPSP; 12°32'15"N lat. and 75°39'46"E long.)
-ext <- c(75.25, 75.55, 12.15, 12.45)                                            
-dmp300.up <- crop(dmp300.multitemp, ext)                                              # up= Uppangala, the Indian study area
+# DMP
+DMP_df <- data.frame(Time, DMP_Medians)
+DMP_df
 
-names(dmp300.up) <- c("Jan 2014","Jan 2015","Jan 2016","Jan 2017","Jan 2018","Jan 2019","Jan 2020", "Jan 2021")
-plot(dmp300.up)
+ggplot(DMP_df, aes(Time, DMP_Medians)) + geom_point() + stat_smooth()
 
-boxplot(dmp300.up)
+# FAPAR
+FAPAR_df <- data.frame(Time, FAPAR_Medians)
+FAPAR_df
 
-dmp300.up.resamp <- stretch(dmp300.up, minv=0, maxv=150)
-plot(dmp300.up.resamp)
+ggplot(DMP_df, aes(Time, FAPAR_Medians)) + geom_point() + stat_smooth()
 
-boxplot(dmp300.up.resamp)
-boxplot(dmp300.up.resamp,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), main="Boxplot Dry Matter Productivity", col="gold")
+# NDVI
+NDVI_df <- data.frame(Time, NDVI_Medians)
+NDVI_Medians
 
-                               #### loading the FaPAR 300 dataset VITO platform
-
-setwd("D:/toy/FAPAR")
-
-rlistFAPAR300 <- list.files(pattern="FAPAR") 
-rlistFAPAR300
-import <- lapply(rlistFAPAR300, raster)
-FAPAR300.multitemp <- stack(import)
-
-# to crop images on my AOI (UPSP; 12°32'15"N lat. and 75°39'46"E long.)
-#ext <- c(75.10, 75.60, 12.05, 12.55)                                            
-FAPAR300.up <- crop(FAPAR300.multitemp, ext)                                                        # up= Uppangala, the Indian study area
-
-names(FAPAR300.up) <- c("Jan 2015","Jan 2016","Jan 2017","Jan 2018","Jan 2019","Jan 2020", "Jan 2021")
-plot(FAPAR300.up)
-boxplot(FAPAR300.up)
+ggplot(DMP_df, aes(Time, NDVI_Medians)) + geom_point() + stat_smooth()
 
 
 
-FAPAR300.up.resamp <- stretch(FAPAR300.up, minv=0, maxv=255)
-FAPAR300.up.resamp.w <- reclassify(FAPAR300.up.resamp, cbind(253, 255, NA), right=TRUE)             #removing water pixels using cbind argument for 253, 255
-levelplot(FAPAR300.up.resamp.w)                                                                     #plot the same image for factors=10 and factors=100
-plot(FAPAR300.up.resamp.w)
-
-boxplot(FAPAR300.up.resamp.w)
-boxplot(FAPAR300.up.resamp.w,outline=F, horizontal=T, axes=T, names=c("Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), main="Boxplot Fraction of Absorbed Photosynthetically Active Radiation ", col="gold")
-
-                                 #### loading the NDVI 300 dataset VITO platform
 
 
-setwd("D:/toy/NDVI")
-
-rlistndvi300 <- list.files(pattern="NDVI") 
-rlistndvi300
-import <- lapply(rlistndvi300, raster)
-ndvi300.multitemp <- stack(import)
-
-# to crop images on my AOI (UPSP; 12°32'15"N lat. and 75°39'46"E long.)
-#ext <- c(75.10, 75.60, 12.05, 12.55)                                            
-ndvi300.up <- crop(ndvi300.multitemp, ext)                                              # up= Uppangala, the Indian study area
-
-names(ndvi300.up) <- c("Jan 2014","Jan 2015","Jan 2016","Jan 2017","Jan 2018","Jan 2019","Jan 2020", "Jan 2021")
-plot(ndvi300.up)
-boxplot(ndvi300.up)
-
-ndvi300.up.resamp <- stretch(dmp300.up, minv=0, maxv=255)
-ndvi300.up.resamp.w <- reclassify(ndvi300.up.resamp, cbind(253, 255, NA), right=TRUE)             #removing water pixels using cbind argument for 253, 255
-levelplot(ndvi300.up.resamp.w) 
-plot(ndvi300.up.resamp.w)
-
-boxplot(ndvi300.up.resamp.w)
-boxplot(ndvi300.up.resamp.w,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), main="Normalized Difference Vegetation Index", col="gold")
-
-
-                                ###### PCA and CORRELATION ANALYSIS
-
-
-# correlation analysis of my images with ggpairs func. # require (GGally) 
-#ggpairs(dmp300.up)
-#ggpairs(FAPAR300.up)
-#ggpairs(ndvi300.up)
+_____________________________________________________###### PCA and CORRELATION ANALYSIS__________________________________________________________________________
 
 
 
 # raster PCA to analyze all the dmp300.UP images data set to modelling all those objects in one single component(object)
-dmpPCA <- rasterPCA(dmp300.up)
+dmpPCA <- rasterPCA(dmp.wg)
 summary(dmpPCA$model)                                                          # PC1 model describes 93.7%
 plot(dmpPCA$map)
 
 # raster PCA to analyze all the FAPAR300.UP images data set to modelling all those objects in one single component(object)
-faparPCA <- rasterPCA(FAPAR300.up)
+faparPCA <- rasterPCA(fapar.wg)
 summary(faparPCA$model)                                                          # PC1 model describes 93.7%
 plot(faparPCA$map)
 
 # raster PCA to analyze all the ndvi300.UP images data set to modelling all those objects in one single component(object)
-ndviPCA <- rasterPCA(ndvi300.up)
+ndviPCA <- rasterPCA(ndvi.wg)
 summary(ndviPCA$model)                                                          # PC1 model describes 93.7%
 plot(ndviPCA$map)
 
-### correlation between indeces
+___________________________________________________________### correlation between indeces
 
 #### dmp.up 21-14
-setwd ("D:/toy/DMP")
+setwd ("D:/DMP")
 dmp14 <- raster("c_gls_DMP300-RT5_202101100000_GLOBE_OLCI_V1.1.1.nc")
 dmp21 <- raster("c_gls_DMP300-RT5_201401100000_GLOBE_PROBAV_V1.0.1.nc")
 
@@ -115,7 +281,7 @@ plot(dmp14.up, dmp21.up, col="blue", xlab="Dry Matter Productivity 2014 (Kg/ha/d
 abline(0,1,col="red")
 
 ## fapar.up 21-14
-setwd ("D:/toy/FAPAR")
+setwd ("D:/FAPAR")
 fapar15 <- raster("c_gls_FAPAR300_202101100000_GLOBE_OLCI_V1.1.1.nc")
 fapar21 <- raster("c_gls_FAPAR300_201501100000_GLOBE_PROBAV_V1.0.1.nc")
 
@@ -126,7 +292,7 @@ plot(fapar15.up, fapar21.up, col="blue", xlab="Fraction Absorbed Photosynthetica
 abline(0,1,col="red")
 
 ### ndvi.up 21-14
-setwd ("D:/toy/DMP")
+setwd ("D:/NDVI")
 ndvi14 <- raster("c_gls_NDVI300_202101010000_GLOBE_OLCI_V2.0.1.nc")
 ndvi21 <- raster("c_gls_NDVI300_201401010000_GLOBE_PROBAV_V1.0.1.nc")
 
@@ -148,212 +314,23 @@ plot(fapar21.up, ndvi21.up, col="red")
 abline(0,1,col="blue")
 
 
-#ggpairs(dmpPCA, faparPCA, ndviPCA)
 
-#abline
-#plot(fapar.up, dmp.up, col="blue")
-#plot(ndviPCA, dmpPCA, col="green")
-#plot(faparPCA, ndviPCA, col="red")
+                                           ##### DIFFERENTIAL ANALYSES #####
 
+#_____________________________________PROJECT SENTINEL 2 10M UPPANGALA RESERVE SHAPE VISUALIZATION____________________________________________________________________
 
-                               ##### DIFFERENCE ANALYSIS
-
-
-### Difference between 2021 - 2014 DMP
-
-setwd("D:/toy/DMP")
-
-   dmp21 <- raster ("c_gls_DMP300-RT5_202101100000_GLOBE_OLCI_V1.1.1.nc")
-   dmp20 <- raster ("c_gls_DMP300-RT5_202001100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp19 <- raster ("c_gls_DMP300-RT5_201901100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp18 <- raster ("c_gls_DMP300-RT5_201801100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp17 <- raster ("c_gls_DMP300-RT5_201701100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp16 <- raster ("c_gls_DMP300-RT5_201601100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp15 <- raster ("c_gls_DMP300-RT5_201501100000_GLOBE_PROBAV_V1.0.1.nc")
-   dmp14 <- raster ("c_gls_DMP300-RT5_201401100000_GLOBE_PROBAV_V1.0.1.nc")
-
-   dmp21.up <- crop(dmp21, ext)
-   dmp20.up <- crop(dmp20, ext)
-   dmp19.up <- crop(dmp19, ext)
-   dmp18.up <- crop(dmp18, ext)
-   dmp17.up <- crop(dmp17, ext)
-   dmp16.up <- crop(dmp16, ext)
-   dmp15.up <- crop(dmp15, ext)
-   dmp14.up <- crop(dmp14, ext)
-      
-       dmp21.up.resamp <- stretch(dmp21.up, minv=0 , maxv=255)
-       dmp20.up.resamp <- stretch(dmp20.up, minv=0 , maxv=255)
-       dmp19.up.resamp <- stretch(dmp19.up, minv=0 , maxv=255)
-       dmp18.up.resamp <- stretch(dmp18.up, minv=0 , maxv=255)
-       dmp17.up.resamp <- stretch(dmp17.up, minv=0 , maxv=255)
-       dmp16.up.resamp <- stretch(dmp16.up, minv=0 , maxv=255)
-       dmp15.up.resamp <- stretch(dmp15.up, minv=0 , maxv=255)
-       dmp14.up.resamp <- stretch(dmp14.up, minv=0 , maxv=255)
-
-
-   dif.dmp.up21 <- dmp21.up - dmp14.up
-   dif.dmp.up20 <- dmp20.up - dmp14.up
-   dif.dmp.up19 <- dmp19.up - dmp14.up
-   cl <- colorRampPalette(c("orange","white","light green","dark green")) (100)
-   par(mfrow = c(2,1))
-   plot(dif.dmp.up21, col= cl, main="Dry Matter Productivity Difference Jan'21 - Jan'14 ")
-      hist(dif.dmp.up21, main="Histogram of Raster(DMP333m) Difference Jan'21- Jan'14")   
-
-   plot(dif.dmp.up20, col= cl, main="Dry Matter Productivity Difference Jan'20 - Jan'14 ")
-     hist(dif.dmp.up20, main="Histogram of Raster(DMP333m) Difference Jan'20- Jan'14")
-
-   plot(dif.dmp.up19, col= cl, main="Dry Matter Productivity Difference Jan'19 - Jan'14 ")
-      hist(dif.dmp.up19, main="Histogram of Raster(DMP333m) Difference Jan'19- Jan'14") 
-   #ggR(dif.dmp.up, geom_raster = TRUE) + scale_fill_scico(palette = "romaO") + ggtitle("Dry Matter Productivity Difference Jan'21 - Jan'14 ") + theme_light() + theme(plot.title.position ='plot', plot.title = element_text(hjust = 0.5))
-   # histogram
-   #par(mfrow = c(3,1))
-   #hist(dif.dmp.up21, main="Histogram of Raster(DMP333m) Difference Jan'21- Jan'16") # breaks="16")
-   #hist(dif.dmp.up20, main="Histogram of Raster(DMP333m) Difference Jan'20- Jan'16") 
-   #hist(dif.dmp.up19, main="Histogram of Raster(DMP333m) Difference Jan'19- Jan'16") 
-
-    # to detect the DMP trend year by year using boxplot function
-    DMP <- stack(dmp14.up, dmp15.up, dmp16.up, dmp17.up, dmp18.up, dmp19.up, dmp20.up, dmp21.up)
-    boxplot(DMP,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), main="Boxplot Dry Matter Productivity", col="gold")       # cancel the outliners 
-
-    DMP.resamp <- stack(dmp14.up.resamp, dmp15.up.resamp, dmp16.up.resamp, dmp17.up.resamp, dmp18.up.resamp, dmp19.up.resamp, dmp20.up.resamp, dmp21.up.resamp)
-    names(DMP.resamp) <- c("Jan 2014","Jan 2015","Jan 2016","Jan 2017","Jan 2018","Jan 2019","Jan 2020", "Jan 2021")
-    levelplot(DMP.resamp)
-    boxplot(DMP.resamp,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), col="gold") 
-
-dev.off()
-
-
-### Difference between 2021 - 2014 FAPAR
-
-setwd("D:/toy/FAPAR")
-
-   fapar21 <- raster ("c_gls_FAPAR300_202101100000_GLOBE_OLCI_V1.1.1.nc")
-   fapar20 <- raster ("c_gls_FAPAR300_202001100000_GLOBE_PROBAV_V1.0.1.nc")
-   fapar19 <- raster ("c_gls_FAPAR300_201901100000_GLOBE_PROBAV_V1.0.1.nc")
-   fapar18 <- raster ("c_gls_FAPAR300_201801100000_GLOBE_PROBAV_V1.0.1.nc")
-   fapar17 <- raster ("c_gls_FAPAR300_201701100000_GLOBE_PROBAV_V1.0.1.nc")
-   fapar16 <- raster ("c_gls_FAPAR300_201601100000_GLOBE_PROBAV_V1.0.1.nc")
-   fapar15 <- raster ("c_gls_FAPAR300_201501100000_GLOBE_PROBAV_V1.0.1.nc")
-   
-ext <- c(75.25, 75.55, 12.15, 12.45) 
-
-   fapar21.up <- crop(fapar21, ext)
-   fapar20.up <- crop(fapar20, ext)
-   fapar19.up <- crop(fapar19, ext)
-   fapar18.up <- crop(fapar18, ext)
-   fapar17.up <- crop(fapar17, ext)
-   fapar16.up <- crop(fapar16, ext)
-   fapar15.up <- crop(fapar15, ext)
-   
-       fapar21.up.resamp <- stretch(fapar21.up, minv=0 , maxv=250)
-       fapar20.up.resamp <- stretch(fapar20.up, minv=0 , maxv=250)
-       fapar19.up.resamp <- stretch(fapar19.up, minv=0 , maxv=250)
-       fapar18.up.resamp <- stretch(fapar18.up, minv=0 , maxv=250)
-       fapar17.up.resamp <- stretch(fapar17.up, minv=0 , maxv=250)
-       fapar16.up.resamp <- stretch(fapar16.up, minv=0 , maxv=250)
-       fapar15.up.resamp <- stretch(fapar15.up, minv=0 , maxv=250)
-       fapar14.up.resamp <- stretch(fapar14.up, minv=0 , maxv=250)
-
-
-   dif.fapar.up21 <- fapar21.up - fapar15.up
-   dif.fapar.up20 <- fapar20.up - fapar15.up
-   dif.fapar.up19 <- fapar19.up - fapar15.up
-
-par(mfrow = c(2,1))
-
-   cl <- colorRampPalette(c("orange","white","light green","dark green")) (100)
-   plot(dif.fapar.up21, col=cl , main ="FAPAR difference Jan'21 - Jan'15")
-   hist(dif.fapar.up21, main="Histogram of Raster(FAPAR333m) Difference Jan'21- Jan'15")
-
-     plot(dif.fapar.up20, col=cl , main ="FAPAR difference Jan'20 - Jan'15")
-   hist(dif.fapar.up20, main="Histogram of Raster(FAPAR333m) Difference Jan'20- Jan'15")
-
-      plot(dif.fapar.up19, col=cl , main ="FAPAR difference Jan'19 - Jan'15")
-   hist(dif.fapar.up19, main="Histogram of Raster(FAPAR333m) Difference Jan'19- Jan'15")
-
-
-   #plot(dif_fapar21.up, col= cl, main="Dry Matter Productivity Difference Jan'21 - Jan'14 ")
-   #ggR(dif.fapar.up, geom_raster = TRUE) + scale_fill_scico(palette = "romaO") + ggtitle("FAPAR Difference Jan'21 - Jan'14 ") + theme_light() + theme(plot.title.position ='plot', plot.title = element_text(hjust = 0.5))
-   
-
-    # to detect the DMP trend year by year using boxplot function
-    #FAPAR <- stack( fapar15.up, fapar16.up, fapar17.up, fapar18.up, fapar19.up, fapar20.up, fapar21.up)
-    #boxplot(FAPAR,outline=F, horizontal=T, axes=T, names=c("Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), main="Boxplot Fraction of Absorbed Photosynthetically Active Radiation", col="gold")       # cancel the outliners 
-
-    FAPAR.resamp <- stack(fapar14.up.resamp, fapar15.up.resamp, fapar16.up.resamp, fapar17.up.resamp, fapar18.up.resamp, fapar19.up.resamp, fapar20.up.resamp, fapar21.up.resamp)
-    names(FAPAR.resamp) <- c("Jan 2014","Jan 2015","Jan 2016","Jan 2017","Jan 2018","Jan 2019","Jan 2020", "Jan 2021")
-    levelplot(FAPAR.resamp)
-    boxplot(FAPAR.resamp,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17","Jan 18","Jan 19", "Jan 20", "Jan 21"), col="gold") 
-
-
-### Difference between 2021 - 2014 NDVI 300
-
-setwd("D:/toy/NDVI")
-
-   ndvi21 <- raster ("c_gls_NDVI300_202101010000_GLOBE_OLCI_V2.0.1.nc")
-   ndvi20 <- raster ("c_gls_NDVI300_202001010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi19 <- raster ("c_gls_NDVI300_201901010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi18 <- raster ("c_gls_NDVI300_201801010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi17 <- raster ("c_gls_NDVI300_201701010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi16 <- raster ("c_gls_NDVI300_201601010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi15 <- raster ("c_gls_NDVI300_201501010000_GLOBE_PROBAV_V1.0.1.nc")
-   ndvi14 <- raster ("c_gls_NDVI300_201401010000_GLOBE_PROBAV_V1.0.1.nc")
-
-   ndvi21.up <- crop(ndvi21, ext)
-   ndvi20.up <- crop(ndvi20, ext)
-   ndvi19.up <- crop(ndvi19, ext)
-   ndvi18.up <- crop(ndvi18, ext)
-   ndvi17.up <- crop(ndvi17, ext)
-   ndvi16.up <- crop(ndvi16, ext)
-   ndvi15.up <- crop(ndvi15, ext)
-   ndvi14.up <- crop(ndvi14, ext)
-
-   dif.ndvi21.up <- ndvi21.up - ndvi14.up
-   dif.ndvi20.up <- ndvi20 - ndvi14.up
-   dif.ndvi19.up <- ndvi19.up - ndvi14.up
-   cl <- colorRampPalette(c("orange","white","light green","dark green")) (100)
-   
-   #plot(dif_dmp.up, col= cl, main="Dry Matter Productivity Difference Jan'21 - Jan'14 ")
-   ggR(dif.ndvi.21up, geom_raster = TRUE) + scale_fill_scico(palette = "romaO") + ggtitle("NDVI Difference Jan'21 - Jan'14 ") + theme_light() + theme(plot.title.position ='plot', plot.title = element_text(hjust = 0.5))
-   # histogramplot(dif.fapar.up19, col=cl , main ="FAPAR difference Jan'19 - Jan'15")
-
-par(mfrow=c(1,2))
-
-plot(dif.ndvi21.up, col=cl , main ="NDVI difference Jan'21 - Jan'14")
-   hist(dif.ndvi21.up, main="Histogram of Raster(NDVI333m) Difference Jan'21- Jan'14")
-
-
-plot(dif.ndvi20.up, col=cl , main ="NDVI difference Jan'20 - Jan'14")
-   hist(dif.ndvi20.up, main="Histogram of Raster(NDVI333m) Difference Jan'20- Jan'14")
-
-
-plot(dif.ndvi19.up, col=cl , main ="NDVI difference Jan'19 - Jan'14")
-   hist(dif.ndvi19.up, main="Histogram of Raster(NDVI333m) Difference Jan'19- Jan'14")
-
-
-
-
-    # to detect the DMP trend year by year using boxplot function
-    NDVI <- stack(ndvi14.up, ndvi15.up, ndvi16.up, ndvi17.up, ndvi18.up, ndvi19.up, ndvi20.up, ndvi21.up)
-    boxplot(NDVI,outline=F, horizontal=T, axes=T, names=c("Jan 14", "Jan 15", "Jan 16","Jan 17", "Jan 18", "Jan 19", "Jan 20", "Jan 21"), main="Boxplot Normalized Difference Vegetation Index", col="gold")       # cancel the outliners 
-
-
-
-
-################################################ PROJECT SENTINEL 2 10M UPPANGALA RESERVE SHAPE VISUALIZATION
-
-setwd("D:/toy/shape file  upsp foe Google eng/")
+setwd("D:/reserve/")
 
 # Project: "crop the shape of Uppangala Reserve"
 # Inserimento di uno shape.file e lettura di esso.
 
-up.shp <- readOGR("D:/toy/shape file  upsp foe Google eng/usgs_uppangala.shp")     # shape di uppangala
+up.shp <- readOGR("D:/reserve/shape file_uppangala.shp")     # shape di uppangala
 summary (up.shp)
 plot(up.shp)
 
 ###### Uppangala Permanent Plot
 
-setwd("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP")
+setwd("D:/reserve/UPPANGALA_PLOTS_SHP")
 
 B <- readOGR("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP/Plot-B.shp") 
 H <- readOGR("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP/Plot-H.shp") 
@@ -362,9 +339,9 @@ N <- readOGR("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP/Plot-N.
 Q <- readOGR("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP/Plot-Q.shp") 
 T <- readOGR("D:/toy/shape file  upsp foe Google eng/UPPANGALA_PLOTS_SHP/Plot-T.shp") 
 
-## loading the NDVI Sentinel 2 images for Uppangala Area and merging the images to cover the whole reserve
+_________________________________________## loading the NDVI Sentinel 2 images for Uppangala Area and merging the images to cover the whole reserve
 
-setwd("D:/toy/sentinel2ndviimages")
+setwd("D:/Sentinel_2/")
 
 #2016
 ndvi151224 <- raster("D:/toy/sentinel2ndviimages/ndvi-2016_01_03(1).tif")
@@ -570,12 +547,14 @@ hist(up21, main = "Jan 2021")
 UPNDVI10 <- stack(up16, up17, up18, up19, up20, up21)
 boxplot(UPNDVI10,outline=F, horizontal=T, axes=T, names=c("Jan 16", "Jan 17", "Jan 18","Jan 19","Jan 20", "Jan 21"), main="Boxplot of Uppangala Reserve Sentinel 2 NDVI10", col="gold")       # cancel the outliners 
 
+
+
 hist(duptot, main="Histogram of Raster(NDVI10m) Difference Jan'21 - Jan'16")
 
 dev off()
 
 
-############################# make the same for the plot UP...
+#_________________________________________make the same for the plots_____________________________
 
 dif.B.tot <- spTransform(B, proj4string(dif))
 db_tot <- mask(crop(dif, extent(dif.B.tot)), dif.B.tot)
@@ -596,73 +575,3 @@ dB5 <- spTransform(B, proj4string(dif5))
 db_21 <- mask(crop(dif5, extent(dB5)), dB5)
 
 
-########dataframe piero code
-library(tidyverse)
-library(raster)
-library(RStoolbox)
-
-fn <- system.file("external/test.grd", package="raster")
-
-stc <- stack(
-  fn,
-  fn
-)
-
-stc_df <- fortify(dmp300.up, maxpixels = 5689958400) %>% 
-  pivot_longer(
-    .,
-    cols = -(1:2),
-    names_to = "layer",
-  )
-
-## arrange funtion: ordering the df in discending # asc goes by default x %>% arrange(variable)
-stc_df %>%
-   arrange(desc(value))
-
-# if i want to filter the value for an year
-stc_df %>%
-   filter (layer== "Jan.2021") %>%
-   arrange (desc(value))
- 
-#to mutate the DF. it is useful to add a new colomn
-stc_df %>%
-   filter (layer== "Jan.2019") %>%
-   mutate(totvalue = 10201 * value )
-   arrange (desc(value))
-
-## data visualòization and scatter plot with ggplot2
-## create a new dataset
-dmp_values2021 <- stc_df %>%
-   filter (layer== "Jan.2021")
-
-# create a visualization in a scatterplot
-library(ggplot2)
-
-ggplot(stc_df, aes(x=layer, y= value)) +
-       geom_point() # try to use also with x=, y=value and x=v y=y
-       scale_x_long10()
-       hist(dmp_values2021$value)
-       ggplot(dmp_values2021, aes(x= x, y=value)) + geom_point()
-
-
-## Analisi statistica e test parametrici
-lineplot (NDVI, outline=F, horizontal=T, axes=T, )
-
-plot(x, y1, type = "l")
-
-
-
-## scatter plot of my df
-plot(layer, value)
-mod1 <- lm(bci_tur ~ bci_geogr)
-mod1
-abline(a = mod1$coefficients[1], b = mod1$coefficients[2], col = "red", lwd = 3)
-
-
-
-########## to make a line in the scatter plot
-
-plot(bci_geogr, bci_tur)
-mod1 <- lm(bci_tur ~ bci_geogr)
-mod1
-abline(a = mod1$coefficients[1], b = mod1$coefficients[2], col = "red", lwd = 3)
