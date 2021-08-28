@@ -324,7 +324,7 @@ ggplot(DMP_df,
 + geom_point() 
 + stat_smooth()
 
-_____________________________________________________###### PCA and STATISTICAL ANALYSIS__________________________________________________________________________
+#_____________________________________________________###### PCA and STATISTICAL ANALYSIS__________________________________________________________________________
 
 
 
@@ -343,7 +343,7 @@ ndviPCA <- rasterPCA(ndvi.wg)
 summary(ndviPCA$model)                                                          # PC1 model describes 93.7%
 plot(ndviPCA$map)
 
-___________________________________________________________### correlation between indeces
+#___________________________________________________________ Correlation between indeces
 
 #### dmp.up 21-14
 setwd ("D:/DMP")
@@ -404,7 +404,7 @@ up.shp <- readOGR("D:/reserve/shape file_uppangala.shp")
 summary (up.shp)
 plot(up.shp)
 
-#__________________________Uppangala Permanent Plots Shape files______________________________________________________________________________________________________
+#_____________________________________Uppangala Permanent Plots Shape files______________________________________________________________________________________________________
 
 setwd("D:/reserve/UPPANGALA_PLOTS_SHP")
 
