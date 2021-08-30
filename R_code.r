@@ -299,7 +299,7 @@ qqnorm(DMP_Medians,
 DMP_df <- data.frame(Time, DMP_Medians)
 DMP_df
 
-# Applicates Smooth Autoregressive Transation Model to the DMP Medians dataframe  
+# Applicates Smooth Autoregressive Transition Model to the DMP Medians dataframe  
 ggplot(DMP_df, 
        aes(Time, DMP_Medians)
       ) 
@@ -310,7 +310,7 @@ ggplot(DMP_df,
 FAPAR_df <- data.frame(Time, FAPAR_Medians)
 FAPAR_df
 
-# Applicates Smooth Autoregressive Transation Model to the FAPAR Medians dataframe 
+# Applicates Smooth Autoregressive Transition Model to the FAPAR Medians dataframe 
 ggplot(DMP_df, 
        aes(Time, FAPAR_Medians)
       ) 
@@ -321,7 +321,7 @@ ggplot(DMP_df,
 NDVI_df <- data.frame(Time, NDVI_Medians)
 NDVI_Medians
 
-# Applicates Smooth Autoregressive Transation Model to the NDVI Medians dataframe 
+# Applicates Smooth Autoregressive Transition Model to the NDVI Medians dataframe 
 ggplot(DMP_df, 
        aes(Time, NDVI_Medians)
       ) 
